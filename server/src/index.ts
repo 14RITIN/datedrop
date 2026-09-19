@@ -3,6 +3,8 @@ import express from 'express';
 
 import { initializeDatabase } from './database/schema.js';
 import { seedDatabase } from './database/seed.js';
+import { errorHandler } from './middleware/error-handler.js';
+import invitationRoutes from './modules/invitations/invitation.routes.js';
 
 const app = express();
 
@@ -20,6 +22,10 @@ app.get('/api/health', (_req, res) => {
     application: 'DateDrop',
   });
 });
+
+app.use('/api/invitations', invitationRoutes);
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`DateDrop API running on http://localhost:${PORT}`);

@@ -1,10 +1,15 @@
+import { Route, Routes } from 'react-router-dom';
+
+import CreateInvitationPage from './pages/CreateInvitationPage';
+
 function App() {
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <h1 className="text-5xl font-bold">
-        DateDrop 💌
-      </h1>
-    </main>
+    <Routes>
+      <Route
+        path="/"
+        element={<CreateInvitationPage />}
+      />
+    </Routes>
   );
 }
 

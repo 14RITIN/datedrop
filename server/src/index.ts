@@ -1,9 +1,15 @@
 import cors from 'cors';
 import express from 'express';
 
+import { initializeDatabase } from './database/schema.js';
+import { seedDatabase } from './database/seed.js';
+
 const app = express();
 
 const PORT = 4000;
+
+initializeDatabase();
+seedDatabase();
 
 app.use(cors());
 app.use(express.json());

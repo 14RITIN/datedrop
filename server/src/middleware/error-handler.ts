@@ -6,6 +6,8 @@ import type {
 
 import { ZodError } from 'zod';
 
+import { AppError } from '../utils/app-error.js';
+
 export function errorHandler(
   error: unknown,
   _req: Request,
@@ -21,6 +23,17 @@ export function errorHandler(
           field: issue.path.join('.'),
           message: issue.message,
         })),
+      },
+    });
+
+    return;
+  }
+
+  if (error instanceof AppError) {
+    res.status(error.statusCode).json({
+      error: {
+        code: error.code,
+        message: error.message,
       },
     });
 

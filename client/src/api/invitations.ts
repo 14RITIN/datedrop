@@ -1,6 +1,7 @@
 import type {
   CreateInvitationRequest,
   CreateInvitationResponse,
+  PublicInvitationResponse,
 } from '../types/invitation';
 
 export async function createInvitation(
@@ -25,6 +26,25 @@ export async function createInvitation(
       'Unable to create your DateDrop';
 
     throw new Error(message);
+  }
+
+  return body;
+}
+
+export async function getInvitation(
+  token: string,
+): Promise<PublicInvitationResponse> {
+  const response = await fetch(
+    `/api/invitations/${encodeURIComponent(token)}`,
+  );
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      body?.error?.message ??
+        'Unable to load this DateDrop',
+    );
   }
 
   return body;

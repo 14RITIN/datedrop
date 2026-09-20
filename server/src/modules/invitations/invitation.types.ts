@@ -23,3 +23,11 @@ export interface Invitation {
   status: InvitationStatus;
   createdAt: string;
 }
+
+export interface PublicInvitation {
+  creatorName: string;
+  recipientName: string;
+  personalMessage: string | null;
+  status: InvitationStatus;
+  createdAt: string;
+}

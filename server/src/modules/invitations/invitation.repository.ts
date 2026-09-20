@@ -3,6 +3,7 @@ import { db } from '../../database/db.js';
 import type {
   CreateInvitationRecord,
   Invitation,
+  PublicInvitation,
 } from './invitation.types.js';
 
 export function createInvitation(
@@ -52,4 +53,23 @@ export function createInvitation(
     .get(result.lastInsertRowid) as Invitation;
 
   return invitation;
+}
+
+export function findInvitationByPublicToken(
+  token: string,
+): PublicInvitation | undefined {
+  return db
+    .prepare(
+      `
+      SELECT
+        creator_name AS creatorName,
+        recipient_name AS recipientName,
+        personal_message AS personalMessage,
+        status,
+        created_at AS createdAt
+      FROM invitations
+      WHERE public_token = ?
+      `,
+    )
+    .get(token) as PublicInvitation | undefined;
 }

@@ -72,55 +72,32 @@ export default function DateTypeCard({
   onSelect,
 }: DateTypeCardProps) {
   return (
-    <section className="rounded-[2rem] border border-rose-100 bg-white p-6 shadow-xl sm:p-8">
-      <div className="text-center">
-        <div
-          className="mb-4 text-5xl"
-          aria-hidden="true"
-        >
-          🎉
-        </div>
+<div className="mt-6 grid gap-2">
+  {dateTypes.map(dateType => (
+    <button
+      key={dateType.value}
+      type="button"
+      onClick={() => onSelect(dateType.value)}
+      className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-left transition hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200"
+    >
+      <span
+        className="text-2xl"
+        aria-hidden="true"
+      >
+        {dateType.emoji}
+      </span>
 
-        <p className="text-sm font-semibold text-rose-500">
-          Excellent decision
-        </p>
+      <span className="min-w-0">
+        <span className="block text-sm font-semibold text-slate-900">
+          {dateType.title}
+        </span>
 
-        <h1 className="mt-2 text-3xl font-bold text-slate-900">
-          What kind of date are we planning?
-        </h1>
-
-        <p className="mt-3 text-slate-500">
-          Pick your adventure.
-        </p>
-      </div>
-
-      <div className="mt-8 grid gap-3 sm:grid-cols-2">
-        {dateTypes.map(dateType => (
-          <button
-            key={dateType.value}
-            type="button"
-            onClick={() =>
-              onSelect(dateType.value)
-            }
-            className="group rounded-2xl border border-slate-200 bg-white p-5 text-left transition hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200"
-          >
-            <span
-              className="text-3xl"
-              aria-hidden="true"
-            >
-              {dateType.emoji}
-            </span>
-
-            <h2 className="mt-3 font-bold text-slate-900">
-              {dateType.title}
-            </h2>
-
-            <p className="mt-1 text-sm leading-relaxed text-slate-500">
-              {dateType.description}
-            </p>
-          </button>
-        ))}
-      </div>
-    </section>
+        <span className="block truncate text-xs text-slate-400">
+          {dateType.description}
+        </span>
+      </span>
+    </button>
+  ))}
+</div>
   );
 }

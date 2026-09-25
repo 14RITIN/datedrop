@@ -6,16 +6,17 @@ import { getInvitation } from "../api/invitations";
 import ProgressTimeline from "../components/invitation/ProgressTimeline";
 import type { DateType } from "../components/invitation/DateTypeCard";
 import DateTypeCard from "../components/invitation/DateTypeCard";
+import CuisineCard from "../components/invitation/CuisineCard";
+import ScheduleCard from "../components/invitation/ScheduleCard";
 
 type InvitationStep =
-  | "intro"
-  | "interest"
-  | "dateType"
-  | "cuisine"
-  | "date"
-  | "time"
-  | "summary"
-  | "declined";
+  | 'intro'
+  | 'interest'
+  | 'dateType'
+  | 'cuisine'
+  | 'schedule'
+  | 'summary'
+  | 'declined';
 
 const MAX_NO_ATTEMPTS = 3;
 
@@ -36,6 +37,17 @@ export default function InvitationPage() {
   const [selectedDateType, setSelectedDateType] = useState<DateType | null>(
     null,
   );
+
+  const [ selectedCuisineIds, setSelectedCuisineIds] = useState<number[]>([]);
+  const [
+  selectedDate,
+  setSelectedDate,
+] = useState('');
+
+const [
+  selectedTime,
+  setSelectedTime,
+] = useState('');
 
   const invitationQuery = useQuery({
     queryKey: ["invitation", token],
@@ -97,6 +109,13 @@ export default function InvitationPage() {
     setNoAttempts((current) => current + 1);
   }
 
+  function handleCuisineContinue(
+  cuisineIds: number[],
+) {
+  setSelectedCuisineIds(cuisineIds);
+ setStep('schedule');
+}
+
   function handleDateTypeSelect(dateType: DateType) {
     setSelectedDateType(dateType);
 
@@ -107,12 +126,22 @@ export default function InvitationPage() {
       return;
     }
 
-    setStep("date");
+   setStep('schedule');
   }
 
   function handleDecline() {
     setStep("declined");
   }
+
+  function handleScheduleContinue(
+  date: string,
+  time: string,
+) {
+  setSelectedDate(date);
+  setSelectedTime(time);
+
+  setStep('summary');
+}
 
   const yesScale = 1 + noAttempts * 0.12;
 
@@ -254,31 +283,75 @@ export default function InvitationPage() {
           <DateTypeCard onSelect={handleDateTypeSelect} />
         )}
 
-        {step === "cuisine" && (
-          <section className="rounded-[2rem] bg-white p-8 text-center shadow-xl">
-            <div className="text-5xl">🍜</div>
+{step === 'cuisine' && (
+  <CuisineCard
+    initialSelection={selectedCuisineIds}
+    onContinue={handleCuisineContinue}
+  />
+)}
 
-            <h1 className="mt-4 text-3xl font-bold">Cuisine selection</h1>
+{step === 'schedule' && (
+  <ScheduleCard
+    initialDate={selectedDate}
+    initialTime={selectedTime}
+    onContinue={
+      handleScheduleContinue
+    }
+  />
+)}
+{step === 'summary' && (
+  <section className="rounded-[2rem] border border-rose-100 bg-white p-6 text-center shadow-xl">
 
-            <p className="mt-3 text-slate-500">Coming in the next step.</p>
+    <div
+      className="text-5xl"
+      aria-hidden="true"
+    >
+      🎉
+    </div>
 
-            <p className="mt-4 text-sm text-slate-400">
-              Selected: {selectedDateType}
-            </p>
-          </section>
-        )}
+    <h1 className="mt-3 text-3xl font-bold text-slate-900">
+      Almost a DateDrop!
+    </h1>
 
-        {step === "date" && (
-          <section className="rounded-[2rem] bg-white p-8 text-center shadow-xl">
-            <div className="text-5xl">📅</div>
+    <div className="mt-6 space-y-2 rounded-2xl bg-slate-50 p-5 text-left text-sm">
 
-            <h1 className="mt-4 text-3xl font-bold">Pick the date</h1>
+      <p>
+        <strong>
+          Date type:
+        </strong>{' '}
+        {selectedDateType}
+      </p>
 
-            <p className="mt-4 text-sm text-slate-400">
-              Selected: {selectedDateType}
-            </p>
-          </section>
-        )}
+      {selectedCuisineIds.length >
+        0 && (
+        <p>
+          <strong>
+            Cuisine IDs:
+          </strong>{' '}
+          {selectedCuisineIds.join(
+            ', ',
+          )}
+        </p>
+      )}
+
+      <p>
+        <strong>Date:</strong>{' '}
+        {selectedDate}
+      </p>
+
+      <p>
+        <strong>Time:</strong>{' '}
+        {selectedTime}
+      </p>
+
+    </div>
+
+    <p className="mt-5 text-sm text-slate-400">
+      Proper summary is next.
+    </p>
+
+  </section>
+)}
       </div>
     </main>
   );

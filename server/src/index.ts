@@ -5,6 +5,7 @@ import { initializeDatabase } from './database/schema.js';
 import { seedDatabase } from './database/seed.js';
 import { errorHandler } from './middleware/error-handler.js';
 import invitationRoutes from './modules/invitations/invitation.routes.js';
+import dateOptionsRoutes from './modules/date-options/date-options.routes.js';
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/invitations', invitationRoutes);
+app.use('/api/date-options', dateOptionsRoutes);
 
 app.use(errorHandler);
 

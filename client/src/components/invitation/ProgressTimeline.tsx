@@ -3,11 +3,9 @@ type InvitationStep =
   | 'interest'
   | 'dateType'
   | 'cuisine'
-  | 'date'
-  | 'time'
+  | 'schedule'
   | 'summary'
   | 'declined';
-
 interface ProgressTimelineProps {
   currentStep: InvitationStep;
 }
@@ -34,14 +32,9 @@ const steps = [
     emoji: '🍜',
   },
   {
-    key: 'date',
-    label: 'Day',
+    key: 'schedule',
+    label: 'Schedule',
     emoji: '📅',
-  },
-  {
-    key: 'time',
-    label: 'Time',
-    emoji: '⏰',
   },
   {
     key: 'summary',

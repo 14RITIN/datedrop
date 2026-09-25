@@ -34,6 +34,8 @@ export default function InviteShareActions({ inviteUrl, compact = false }: Invit
           text: 'Someone has something to ask you 👀',
           url: url.toString(),
         });
+        setFeedback('Share complete!');
+        timer.current = setTimeout(() => setFeedback(''), 2000);
       } else {
         await navigator.clipboard.writeText(url.toString());
         setFeedback('Copied! 💌');
@@ -50,7 +52,7 @@ export default function InviteShareActions({ inviteUrl, compact = false }: Invit
     }
   }
 
-  const focus = 'transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200 disabled:cursor-not-allowed disabled:opacity-60';
+  const focus = 'transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-700 disabled:cursor-not-allowed disabled:opacity-60';
 
   return (
     <div className={compact ? '' : 'mt-4'}>
@@ -60,23 +62,25 @@ export default function InviteShareActions({ inviteUrl, compact = false }: Invit
           disabled={pending}
           onClick={() => void handleAction(true)}
           className={`${focus} ${compact
-            ? 'rounded-xl bg-rose-50 px-3 py-2 font-semibold text-rose-600 hover:bg-rose-100'
-            : 'w-full rounded-2xl bg-rose-500 px-5 py-3 font-semibold text-white hover:bg-rose-600'}`}
+            ? 'rounded-xl bg-rose-50 px-3 py-2 font-semibold text-rose-700 hover:bg-rose-100'
+            : 'w-full rounded-2xl bg-rose-700 px-5 py-3 font-semibold text-white hover:bg-rose-800'}`}
         >
-          {compact ? 'Share 💌' : 'Share DateDrop 💌'}
+          {compact ? 'Share' : 'Share DateDrop'} <span aria-hidden="true">💌</span>
         </button>
         <button
           type="button"
           disabled={pending}
           onClick={() => void handleAction(false)}
           className={`${focus} ${compact
-            ? 'rounded-xl px-3 py-2 font-semibold text-rose-600 hover:bg-rose-50'
-            : 'w-full rounded-2xl border border-slate-200 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50'}`}
+            ? 'rounded-xl px-3 py-2 font-semibold text-rose-700 hover:bg-rose-50'
+            : 'w-full rounded-2xl border border-slate-500 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50'}`}
         >
           {compact ? 'Copy Invite' : 'Copy Invite Link'}
         </button>
       </div>
-      <p role="status" aria-live="polite" className="text-sm text-slate-500">{feedback}</p>
+      <p role="status" className="text-sm text-slate-600">
+        {feedback === 'Copied! 💌' ? <>Copied! <span aria-hidden="true">💌</span></> : feedback}
+      </p>
       {error && <p role="alert" className="mt-2 text-sm text-red-700">{error}</p>}
     </div>
   );

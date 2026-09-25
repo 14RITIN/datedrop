@@ -1,3 +1,4 @@
+import { usePageHeadingFocus } from '../hooks/usePageHeadingFocus';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
@@ -27,6 +28,8 @@ export default function CreateInvitationPage() {
       setSavedDateDrops(loadDateDrops());
     },
   });
+
+  usePageHeadingFocus(createMutation.isSuccess);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -60,7 +63,7 @@ export default function CreateInvitationPage() {
               💌
             </div>
 
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            <h1 tabIndex={-1} className="text-3xl font-bold tracking-tight text-slate-900">
               Your DateDrop is ready!
             </h1>
 
@@ -83,7 +86,7 @@ export default function CreateInvitationPage() {
 
           <div className="mt-8 border-t border-slate-200 pt-6">
             <p className="text-sm font-semibold text-slate-900">
-              Want to see what they say? 👀
+              Want to see what they say? <span aria-hidden="true">👀</span>
             </p>
 
             {!storageFailed && (
@@ -93,9 +96,9 @@ export default function CreateInvitationPage() {
             )}
             <Link
               to={createMutation.data.data.manageUrl}
-              className="mt-4 block rounded-2xl bg-rose-500 px-5 py-3 text-center font-semibold text-white hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200"
+              className="mt-4 block rounded-2xl bg-rose-700 px-5 py-3 text-center font-semibold text-white hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-700"
             >
-              Track Response 👀
+              Track Response <span aria-hidden="true">👀</span>
             </Link>
             {storageFailed && (
               <div role="alert" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
@@ -110,7 +113,7 @@ export default function CreateInvitationPage() {
           <button
             type="button"
             onClick={() => createMutation.reset()}
-            className="mt-6 w-full rounded-2xl border border-slate-200 px-5 py-3 font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200"
+            className="mt-6 w-full rounded-2xl border border-slate-500 px-5 py-3 font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-700"
           >
             Create another DateDrop
           </button>
@@ -130,7 +133,7 @@ export default function CreateInvitationPage() {
             💌
           </div>
 
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+          <h1 tabIndex={-1} className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
             DateDrop
           </h1>
 
@@ -138,24 +141,25 @@ export default function CreateInvitationPage() {
             Asking someone out shouldn't feel like filling out a form.
           </p>
 
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-slate-600">
             Create something a little more fun instead.
           </p>
         </header>
 
         <section className="rounded-[2rem] border border-rose-100 bg-white p-6 shadow-xl sm:p-8">
           <div className="mb-7">
-            <p className="text-sm font-semibold text-rose-600">
+            <p className="text-sm font-semibold text-rose-700">
               Step 1
             </p>
 
             <h2 className="mt-1 text-2xl font-bold text-slate-900">
-              Who's the lucky person? 👀
+              Who's the lucky person? <span aria-hidden="true">👀</span>
             </h2>
           </div>
 
           <form
             onSubmit={handleSubmit}
+            aria-describedby={createMutation.isError ? "create-error" : undefined}
             className="space-y-5"
           >
             <div>
@@ -163,7 +167,7 @@ export default function CreateInvitationPage() {
                 htmlFor="creatorName"
                 className="mb-2 block text-sm font-semibold text-slate-700"
               >
-                Your name
+                Your name (required)
               </label>
 
               <input
@@ -179,7 +183,7 @@ export default function CreateInvitationPage() {
                   setCreatorName(event.target.value)
                 }
                 placeholder="Your name"
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
+                className="w-full rounded-2xl border border-slate-500 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-600 focus:border-rose-700 focus:ring-4 focus:ring-rose-100"
               />
             </div>
 
@@ -188,7 +192,7 @@ export default function CreateInvitationPage() {
                 htmlFor="recipientName"
                 className="mb-2 block text-sm font-semibold text-slate-700"
               >
-                Their name
+                Their name (required)
               </label>
 
               <input
@@ -203,7 +207,7 @@ export default function CreateInvitationPage() {
                   setRecipientName(event.target.value)
                 }
                 placeholder="Who are we asking? 👀"
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
+                className="w-full rounded-2xl border border-slate-500 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-600 focus:border-rose-700 focus:ring-4 focus:ring-rose-100"
               />
             </div>
 
@@ -213,17 +217,18 @@ export default function CreateInvitationPage() {
                   htmlFor="message"
                   className="text-sm font-semibold text-slate-700"
                 >
-                  Add a little message
+                  Add a little message (optional)
                 </label>
 
-                <span className="text-xs text-slate-400">
-                  {message.length}/300
+                <span id="message-count" className="text-xs text-slate-600">
+                  {message.length} / 300 characters
                 </span>
               </div>
 
               <textarea
                 id="message"
                 name="message"
+                aria-describedby="message-count"
                 maxLength={300}
                 rows={4}
                 value={message}
@@ -231,13 +236,14 @@ export default function CreateInvitationPage() {
                   setMessage(event.target.value)
                 }
                 placeholder="I have a very important question for you..."
-                className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
+                className="w-full resize-none rounded-2xl border border-slate-500 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-600 focus:border-rose-700 focus:ring-4 focus:ring-rose-100"
               />
             </div>
 
             {createMutation.isError && (
               <div
                 role="alert"
+                id="create-error"
                 className="rounded-2xl bg-red-50 p-4 text-sm text-red-700"
               >
                 {createMutation.error instanceof Error
@@ -249,19 +255,20 @@ export default function CreateInvitationPage() {
             <button
               type="submit"
               disabled={createMutation.isPending}
-              className="w-full rounded-2xl bg-slate-900 px-5 py-4 font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-2xl bg-slate-900 px-5 py-4 font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {createMutation.isPending
                 ? 'Preparing your DateDrop...'
                 : 'Create DateDrop 💌'}
             </button>
+            <p role="status" className="sr-only">{createMutation.isPending ? "Preparing your DateDrop..." : ""}</p>
           </form>
         </section>
 
         {savedDateDrops.length > 0 && (
           <section className="mt-6 rounded-[2rem] border border-rose-100 bg-white p-6 shadow-xl sm:p-8">
             <h2 className="text-xl font-bold text-slate-900">Your DateDrops</h2>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-slate-600">
               Private response links saved in this browser.
             </p>
             <ul className="mt-4 space-y-4">
@@ -270,11 +277,11 @@ export default function CreateInvitationPage() {
                   <span className="min-w-0 break-words text-slate-700">
                     For {invitation.recipientName}
                   </span>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div role="group" aria-label={`Actions for ${invitation.recipientName}`} className="flex flex-wrap items-center gap-2">
                     <InviteShareActions inviteUrl={invitation.inviteUrl} compact />
                   <Link
                     to={invitation.manageUrl}
-                    className="shrink-0 rounded-xl px-3 py-2 font-semibold text-rose-600 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200"
+                    className="shrink-0 rounded-xl px-3 py-2 font-semibold text-rose-700 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-700"
                   >
                     Track Response
                   </Link>
@@ -285,7 +292,7 @@ export default function CreateInvitationPage() {
           </section>
         )}
 
-        <p className="mt-6 text-center text-xs text-slate-400">
+        <p className="mt-6 text-center text-xs text-slate-600">
           No awkward conversations were harmed in the making of this invite.
         </p>
       </div>

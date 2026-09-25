@@ -109,28 +109,28 @@ export default function SummaryCard({
           👀
         </div>
 
-        <p className="mt-3 text-sm font-semibold text-rose-500">
+        <p className="mt-3 text-sm font-semibold text-rose-700">
           One last check
         </p>
 
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">
+        <h1 tabIndex={-1} className="mt-1 text-2xl font-bold text-slate-900">
           Does this look right?
         </h1>
       </div>
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-slate-100">
         <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-4 py-3">
-          <span className="text-sm text-slate-500">
+          <span className="text-sm text-slate-600">
             With
           </span>
 
           <strong className="text-sm text-slate-900">
-            {creatorName} ❤️
+            {creatorName} <span aria-hidden="true">❤️</span>
           </strong>
         </div>
 
         <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-4 py-3">
-          <span className="text-sm text-slate-500">
+          <span className="text-sm text-slate-600">
             Date
           </span>
 
@@ -144,7 +144,7 @@ export default function SummaryCard({
         {cuisines.length >
           0 && (
           <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-4 py-3">
-            <span className="text-sm text-slate-500">
+            <span className="text-sm text-slate-600">
               Food
             </span>
 
@@ -160,7 +160,7 @@ export default function SummaryCard({
         )}
 
         <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-4 py-3">
-          <span className="text-sm text-slate-500">
+          <span className="text-sm text-slate-600">
             Day
           </span>
 
@@ -170,7 +170,7 @@ export default function SummaryCard({
         </div>
 
         <div className="flex items-center justify-between gap-4 px-4 py-3">
-          <span className="text-sm text-slate-500">
+          <span className="text-sm text-slate-600">
             Time
           </span>
 
@@ -182,10 +182,16 @@ export default function SummaryCard({
 
       <div className="mt-5 rounded-xl bg-rose-50 px-4 py-3 text-center">
         <p className="text-sm text-rose-700">
-          Once you confirm, we're calling this officially a date. No pressure. 😌
+          Once you confirm, we're calling this officially a date. No pressure. <span aria-hidden="true">😌</span>
         </p>
       </div>
 
+      <p role="status" className="mt-3 text-sm text-slate-600">
+        {isSubmitting ? 'Saving your response...' : cuisineIds.length > 0 && optionsQuery.isPending ? 'Loading your selected cuisines...' : ''}
+      </p>
+      {cuisineIds.length > 0 && optionsQuery.isError && (
+        <p role="alert" className="mt-3 text-sm text-red-700">Unable to display your selected cuisines. Please reload to try again.</p>
+      )}
       {error && (
         <div
           role="alert"
@@ -201,7 +207,7 @@ export default function SummaryCard({
           isSubmitting
         }
         onClick={onConfirm}
-        className="mt-5 w-full rounded-2xl bg-rose-500 px-5 py-4 font-bold text-white transition hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-5 w-full rounded-2xl bg-rose-700 px-5 py-4 font-bold text-white transition hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting
           ? 'Making it official...'

@@ -72,13 +72,15 @@ export default function DateTypeCard({
   onSelect,
 }: DateTypeCardProps) {
   return (
+<section>
+<h1 tabIndex={-1} className="text-2xl font-bold text-slate-900">What kind of date?</h1>
 <div className="mt-6 grid gap-2">
   {dateTypes.map(dateType => (
     <button
       key={dateType.value}
       type="button"
       onClick={() => onSelect(dateType.value)}
-      className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-left transition hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200"
+      className="flex items-center gap-3 rounded-xl border border-slate-500 bg-white px-3 py-3 text-left transition hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-700"
     >
       <span
         className="text-2xl"
@@ -92,12 +94,13 @@ export default function DateTypeCard({
           {dateType.title}
         </span>
 
-        <span className="block truncate text-xs text-slate-400">
+        <span className="block text-xs text-slate-600">
           {dateType.description}
         </span>
       </span>
     </button>
   ))}
 </div>
+</section>
   );
 }

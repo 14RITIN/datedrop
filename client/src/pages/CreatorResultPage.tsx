@@ -1,3 +1,4 @@
+import { usePageHeadingFocus } from '../hooks/usePageHeadingFocus';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 
@@ -76,12 +77,12 @@ export default function CreatorResultPage() {
             type="button"
             disabled={copyMutation.isPending}
             onClick={() => copyMutation.mutate(savedDateDrop.inviteUrl)}
-            className="w-full rounded-2xl bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200 disabled:opacity-60"
+            className="w-full rounded-2xl bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-700 disabled:opacity-60"
           >
-            Copy Invite Link 💌
+            Copy Invite Link <span aria-hidden="true">💌</span>
           </button>
           {copyMutation.variables === savedDateDrop.inviteUrl && copyMutation.isSuccess && (
-            <p role="status" className="text-center text-sm text-slate-500">Copied! 💌</p>
+            <p role="status" className="text-center text-sm text-slate-600">Copied! <span aria-hidden="true">💌</span></p>
           )}
           {copyMutation.variables === savedDateDrop.inviteUrl && copyMutation.isError && (
             <p role="alert" className="text-center text-sm text-red-700">Unable to copy the invite link. Please try again.</p>
@@ -90,7 +91,7 @@ export default function CreatorResultPage() {
       )}
       <Link
         to="/"
-        className="block rounded-2xl border border-slate-200 px-5 py-3 text-center font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200"
+        className="block rounded-2xl border border-slate-200 px-5 py-3 text-center font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-700"
       >
         Back to My DateDrops
       </Link>
@@ -115,15 +116,17 @@ export default function CreatorResultPage() {
       retry: false,
     });
 
+  usePageHeadingFocus(`${token}:${resultQuery.status}:${resultQuery.data?.data.status}`);
+
   if (resultQuery.isPending) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-rose-50 via-orange-50 to-white px-4">
         <div className="text-center">
-          <div className="text-5xl">
+          <div aria-hidden="true" className="text-5xl">
             💌
           </div>
 
-          <p className="mt-4 text-slate-500">
+          <p role="status" className="mt-4 text-slate-600">
             Checking your DateDrop...
           </p>
           {navigation}
@@ -136,15 +139,15 @@ export default function CreatorResultPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-rose-50 via-orange-50 to-white px-4">
         <section className="w-full max-w-md rounded-[2rem] bg-white p-8 text-center shadow-xl">
-          <div className="text-5xl">
+          <div aria-hidden="true" className="text-5xl">
             💔
           </div>
 
-          <h1 className="mt-4 text-2xl font-bold">
+          <h1 tabIndex={-1} className="mt-4 text-2xl font-bold">
             DateDrop not found
           </h1>
 
-          <p className="mt-3 text-slate-500">
+          <p role="alert" className="mt-3 text-slate-600">
             {resultQuery.error instanceof Error
               ? resultQuery.error.message
               : 'Unable to load this DateDrop.'}
@@ -165,11 +168,11 @@ export default function CreatorResultPage() {
         {invitation.status ===
           'PENDING' && (
           <div className="text-center">
-            <div className="text-6xl">
+            <div aria-hidden="true" className="text-6xl">
               👀
             </div>
 
-            <h1 className="mt-4 text-3xl font-bold text-slate-900">
+            <h1 tabIndex={-1} className="mt-4 text-3xl font-bold text-slate-900">
               Still waiting...
             </h1>
 
@@ -185,8 +188,8 @@ export default function CreatorResultPage() {
                 10 seconds.
               </p>
 
-              <p className="mt-1 text-xs text-slate-500">
-                We know you're going to. 😂
+              <p className="mt-1 text-xs text-slate-600">
+                We know you're going to. <span aria-hidden="true">😂</span>
               </p>
             </div>
           </div>
@@ -195,11 +198,11 @@ export default function CreatorResultPage() {
         {invitation.status ===
           'DECLINED' && (
           <div className="text-center">
-            <div className="text-6xl">
+            <div aria-hidden="true" className="text-6xl">
               🫡
             </div>
 
-            <h1 className="mt-4 text-3xl font-bold text-slate-900">
+            <h1 tabIndex={-1} className="mt-4 text-3xl font-bold text-slate-900">
               Mission respectfully
               aborted.
             </h1>
@@ -209,9 +212,9 @@ export default function CreatorResultPage() {
               passed on this one.
             </p>
 
-            <p className="mt-6 text-sm text-slate-400">
+            <p className="mt-6 text-sm text-slate-600">
               Cupid has filed the
-              paperwork. 😂
+              paperwork. <span aria-hidden="true">😂</span>
             </p>
           </div>
         )}
@@ -221,17 +224,17 @@ export default function CreatorResultPage() {
           invitation.response && (
             <div>
               <div className="text-center">
-                <div className="text-6xl">
+                <div aria-hidden="true" className="text-6xl">
                   🎉
                 </div>
 
-                <p className="mt-3 text-sm font-semibold text-rose-500">
+                <p className="mt-3 text-sm font-semibold text-rose-700">
                   IT'S OFFICIAL
                 </p>
 
-                <h1 className="mt-1 text-3xl font-bold text-slate-900">
+                <h1 tabIndex={-1} className="mt-1 text-3xl font-bold text-slate-900">
                   {invitation.recipientName}{' '}
-                  said yes! ❤️
+                  said yes! <span aria-hidden="true">❤️</span>
                 </h1>
               </div>
 
@@ -240,7 +243,7 @@ export default function CreatorResultPage() {
                 {invitation.response
                   .dateType && (
                   <div className="flex justify-between border-b border-slate-100 px-4 py-3">
-                    <span className="text-sm text-slate-500">
+                    <span className="text-sm text-slate-600">
                       Date
                     </span>
 
@@ -257,7 +260,7 @@ export default function CreatorResultPage() {
                   .cuisines.length >
                   0 && (
                   <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-4 py-3">
-                    <span className="text-sm text-slate-500">
+                    <span className="text-sm text-slate-600">
                       Food
                     </span>
 
@@ -275,7 +278,7 @@ export default function CreatorResultPage() {
                 {invitation.response
                   .date && (
                   <div className="flex justify-between gap-4 border-b border-slate-100 px-4 py-3">
-                    <span className="text-sm text-slate-500">
+                    <span className="text-sm text-slate-600">
                       Day
                     </span>
 
@@ -291,7 +294,7 @@ export default function CreatorResultPage() {
                 {invitation.response
                   .time && (
                   <div className="flex justify-between px-4 py-3">
-                    <span className="text-sm text-slate-500">
+                    <span className="text-sm text-slate-600">
                       Time
                     </span>
 
@@ -308,7 +311,7 @@ export default function CreatorResultPage() {
               <div className="mt-6 rounded-2xl bg-rose-50 p-4 text-center">
                 <p className="font-medium text-rose-700">
                   Calendar blocked.
-                  Excuses disabled. 😎
+                  Excuses disabled. <span aria-hidden="true">😎</span>
                 </p>
               </div>
             </div>

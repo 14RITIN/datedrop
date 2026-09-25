@@ -4,23 +4,15 @@ import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 
 import { createInvitation } from '../api/invitations';
+import InviteShareActions from '../components/invitation/InviteShareActions';
 import { loadDateDrops, saveDateDrop } from '../utils/dateDropStorage';
 
 export default function CreateInvitationPage() {
   const [creatorName, setCreatorName] = useState('');
   const [recipientName, setRecipientName] = useState('');
   const [message, setMessage] = useState('');
-  const [copied, setCopied] = useState(false);
   const [savedDateDrops, setSavedDateDrops] = useState(loadDateDrops);
   const [storageFailed, setStorageFailed] = useState(false);
-
-  const copySavedMutation = useMutation({
-    mutationFn: async (inviteUrl: string) => {
-      await navigator.clipboard.writeText(
-        new URL(inviteUrl, window.location.origin).toString(),
-      );
-    },
-  });
 
   const createMutation = useMutation({
     mutationFn: createInvitation,
@@ -33,7 +25,6 @@ export default function CreateInvitationPage() {
       });
       setStorageFailed(!saved);
       setSavedDateDrops(loadDateDrops());
-      setCopied(false);
     },
   });
 
@@ -45,25 +36,6 @@ export default function CreateInvitationPage() {
       recipientName: recipientName.trim(),
       message: message.trim() || undefined,
     });
-  }
-
-  async function handleCopyInvite() {
-    if (!createMutation.data) {
-      return;
-    }
-
-    const inviteUrl = new URL(
-      createMutation.data.data.inviteUrl,
-      window.location.origin,
-    ).toString();
-
-    await navigator.clipboard.writeText(inviteUrl);
-
-    setCopied(true);
-
-    window.setTimeout(() => {
-      setCopied(false);
-    }, 2000);
   }
 
   if (createMutation.isSuccess) {
@@ -107,13 +79,7 @@ export default function CreateInvitationPage() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleCopyInvite}
-            className="mt-4 w-full rounded-2xl bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200"
-          >
-            {copied ? 'Copied! 💌' : 'Copy DateDrop Link'}
-          </button>
+          <InviteShareActions inviteUrl={createMutation.data.data.inviteUrl} />
 
           <div className="mt-8 border-t border-slate-200 pt-6">
             <p className="text-sm font-semibold text-slate-900">
@@ -305,14 +271,7 @@ export default function CreateInvitationPage() {
                     For {invitation.recipientName}
                   </span>
                   <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={copySavedMutation.isPending}
-                    onClick={() => copySavedMutation.mutate(invitation.inviteUrl)}
-                    className="shrink-0 rounded-xl px-3 py-2 font-semibold text-rose-600 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200 disabled:opacity-60"
-                  >
-                    Copy Invite
-                  </button>
+                    <InviteShareActions inviteUrl={invitation.inviteUrl} compact />
                   <Link
                     to={invitation.manageUrl}
                     className="shrink-0 rounded-xl px-3 py-2 font-semibold text-rose-600 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200"
@@ -320,12 +279,6 @@ export default function CreateInvitationPage() {
                     Track Response
                   </Link>
                   </div>
-                  {copySavedMutation.variables === invitation.inviteUrl && copySavedMutation.isSuccess && (
-                    <p role="status" className="w-full text-sm text-slate-500">Copied! 💌</p>
-                  )}
-                  {copySavedMutation.variables === invitation.inviteUrl && copySavedMutation.isError && (
-                    <p role="alert" className="w-full text-sm text-red-700">Unable to copy the invite link. Please try again.</p>
-                  )}
                 </li>
               ))}
             </ul>

@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Link, useParams } from 'react-router-dom';
 
 import { getCreatorInvitation } from '../api/invitations';
+import { loadDateDrops } from '../utils/dateDropStorage';
 
 function formatDate(
   value: string,
@@ -57,6 +58,45 @@ export default function CreatorResultPage() {
     token: string;
   }>();
 
+  const savedDateDrop = loadDateDrops().find(
+    invitation => invitation.manageUrl === window.location.pathname,
+  );
+  const copyMutation = useMutation({
+    mutationFn: async (inviteUrl: string) => {
+      await navigator.clipboard.writeText(
+        new URL(inviteUrl, window.location.origin).toString(),
+      );
+    },
+  });
+  const navigation = (
+    <div className="mt-6 space-y-3">
+      {savedDateDrop && (
+        <>
+          <button
+            type="button"
+            disabled={copyMutation.isPending}
+            onClick={() => copyMutation.mutate(savedDateDrop.inviteUrl)}
+            className="w-full rounded-2xl bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200 disabled:opacity-60"
+          >
+            Copy Invite Link 💌
+          </button>
+          {copyMutation.variables === savedDateDrop.inviteUrl && copyMutation.isSuccess && (
+            <p role="status" className="text-center text-sm text-slate-500">Copied! 💌</p>
+          )}
+          {copyMutation.variables === savedDateDrop.inviteUrl && copyMutation.isError && (
+            <p role="alert" className="text-center text-sm text-red-700">Unable to copy the invite link. Please try again.</p>
+          )}
+        </>
+      )}
+      <Link
+        to="/"
+        className="block rounded-2xl border border-slate-200 px-5 py-3 text-center font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200"
+      >
+        Back to My DateDrops
+      </Link>
+    </div>
+  );
+
   const resultQuery =
     useQuery({
       queryKey: [
@@ -86,6 +126,7 @@ export default function CreatorResultPage() {
           <p className="mt-4 text-slate-500">
             Checking your DateDrop...
           </p>
+          {navigation}
         </div>
       </main>
     );
@@ -108,6 +149,7 @@ export default function CreatorResultPage() {
               ? resultQuery.error.message
               : 'Unable to load this DateDrop.'}
           </p>
+          {navigation}
         </section>
       </main>
     );
@@ -272,6 +314,7 @@ export default function CreatorResultPage() {
             </div>
           )}
 
+        {navigation}
       </section>
     </main>
   );

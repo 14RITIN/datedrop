@@ -1,16 +1,40 @@
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 
 import { createInvitation } from '../api/invitations';
+import { loadDateDrops, saveDateDrop } from '../utils/dateDropStorage';
 
 export default function CreateInvitationPage() {
   const [creatorName, setCreatorName] = useState('');
   const [recipientName, setRecipientName] = useState('');
   const [message, setMessage] = useState('');
   const [copied, setCopied] = useState(false);
+  const [savedDateDrops, setSavedDateDrops] = useState(loadDateDrops);
+  const [storageFailed, setStorageFailed] = useState(false);
+
+  const copySavedMutation = useMutation({
+    mutationFn: async (inviteUrl: string) => {
+      await navigator.clipboard.writeText(
+        new URL(inviteUrl, window.location.origin).toString(),
+      );
+    },
+  });
 
   const createMutation = useMutation({
     mutationFn: createInvitation,
+    onSuccess: (result, input) => {
+      const saved = saveDateDrop({
+        id: result.data.id,
+        recipientName: input.recipientName,
+        inviteUrl: result.data.inviteUrl,
+        manageUrl: result.data.manageUrl,
+      });
+      setStorageFailed(!saved);
+      setSavedDateDrops(loadDateDrops());
+      setCopied(false);
+    },
   });
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -93,16 +117,28 @@ export default function CreateInvitationPage() {
 
           <div className="mt-8 border-t border-slate-200 pt-6">
             <p className="text-sm font-semibold text-slate-900">
-              Keep this link private
+              Want to see what they say? 👀
             </p>
 
-            <p className="mt-1 text-sm text-slate-600">
-              You'll use it later to see their response.
-            </p>
-
-            <p className="mt-3 break-all rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
-              {manageUrl}
-            </p>
+            {!storageFailed && (
+              <p className="mt-1 text-sm text-slate-600">
+                We'll remember this DateDrop on this browser.
+              </p>
+            )}
+            <Link
+              to={createMutation.data.data.manageUrl}
+              className="mt-4 block rounded-2xl bg-rose-500 px-5 py-3 text-center font-semibold text-white hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200"
+            >
+              Track Response 👀
+            </Link>
+            {storageFailed && (
+              <div role="alert" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                <p>
+                  This browser could not save your DateDrop. Save this private link manually to track the response later.
+                </p>
+                <p className="mt-2 break-all text-xs">{manageUrl}</p>
+              </div>
+            )}
           </div>
 
           <button
@@ -255,6 +291,46 @@ export default function CreateInvitationPage() {
             </button>
           </form>
         </section>
+
+        {savedDateDrops.length > 0 && (
+          <section className="mt-6 rounded-[2rem] border border-rose-100 bg-white p-6 shadow-xl sm:p-8">
+            <h2 className="text-xl font-bold text-slate-900">Your DateDrops</h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Private response links saved in this browser.
+            </p>
+            <ul className="mt-4 space-y-4">
+              {savedDateDrops.map(invitation => (
+                <li key={invitation.manageUrl} className="flex flex-wrap items-center justify-between gap-4">
+                  <span className="min-w-0 break-words text-slate-700">
+                    For {invitation.recipientName}
+                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={copySavedMutation.isPending}
+                    onClick={() => copySavedMutation.mutate(invitation.inviteUrl)}
+                    className="shrink-0 rounded-xl px-3 py-2 font-semibold text-rose-600 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200 disabled:opacity-60"
+                  >
+                    Copy Invite
+                  </button>
+                  <Link
+                    to={invitation.manageUrl}
+                    className="shrink-0 rounded-xl px-3 py-2 font-semibold text-rose-600 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200"
+                  >
+                    Track Response
+                  </Link>
+                  </div>
+                  {copySavedMutation.variables === invitation.inviteUrl && copySavedMutation.isSuccess && (
+                    <p role="status" className="w-full text-sm text-slate-500">Copied! 💌</p>
+                  )}
+                  {copySavedMutation.variables === invitation.inviteUrl && copySavedMutation.isError && (
+                    <p role="alert" className="w-full text-sm text-red-700">Unable to copy the invite link. Please try again.</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <p className="mt-6 text-center text-xs text-slate-400">
           No awkward conversations were harmed in the making of this invite.

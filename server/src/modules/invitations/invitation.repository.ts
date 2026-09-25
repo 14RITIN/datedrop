@@ -2,9 +2,12 @@ import { db } from '../../database/db.js';
 
 import type {
   CreateInvitationRecord,
+  CreatorInvitationRecord,
   Invitation,
+  InvitationResponseRecord,
   InvitationResponseTarget,
   PublicInvitation,
+  ResponseCuisine,
   SaveInvitationResponseInput,
 } from './invitation.types.js';
 
@@ -206,4 +209,67 @@ export function saveInvitationResponse(
     });
 
   transaction();
+}
+
+export function findInvitationByCreatorToken(
+  creatorToken: string,
+): CreatorInvitationRecord | undefined {
+  return db
+    .prepare(
+      `
+      SELECT
+        id,
+        creator_name AS creatorName,
+        recipient_name AS recipientName,
+        status,
+        created_at AS createdAt,
+        responded_at AS respondedAt
+      FROM invitations
+      WHERE creator_token = ?
+      `,
+    )
+    .get(creatorToken) as
+    | CreatorInvitationRecord
+    | undefined;
+}
+
+export function findCuisinesByResponseId(
+  responseId: number,
+): ResponseCuisine[] {
+  return db
+    .prepare(
+      `
+      SELECT
+        c.id,
+        c.name,
+        c.emoji
+      FROM response_cuisines rc
+      JOIN cuisines c
+        ON c.id = rc.cuisine_id
+      WHERE rc.response_id = ?
+      ORDER BY c.name
+      `,
+    )
+    .all(responseId) as ResponseCuisine[];
+}
+
+export function findResponseByInvitationId(
+  invitationId: number,
+): InvitationResponseRecord | undefined {
+  return db
+    .prepare(
+      `
+      SELECT
+        id,
+        interested,
+        date_type AS dateType,
+        selected_date AS selectedDate,
+        selected_time AS selectedTime
+      FROM date_responses
+      WHERE invitation_id = ?
+      `,
+    )
+    .get(invitationId) as
+    | InvitationResponseRecord
+    | undefined;
 }

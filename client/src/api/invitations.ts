@@ -1,6 +1,7 @@
 import type {
   CreateInvitationRequest,
   CreateInvitationResponse,
+  CreatorInvitationResponse,
   PublicInvitationResponse,
   SubmitInvitationResponseRequest,
   SubmitInvitationResponseResponse,
@@ -79,6 +80,28 @@ export async function submitInvitationResponse(
     throw new Error(
       body?.error?.message ??
         'Unable to save your DateDrop',
+    );
+  }
+
+  return body;
+}
+
+export async function getCreatorInvitation(
+  creatorToken: string,
+): Promise<CreatorInvitationResponse> {
+  const response = await fetch(
+    `/api/invitations/manage/${encodeURIComponent(
+      creatorToken,
+    )}`,
+  );
+
+  const body =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      body?.error?.message ??
+        'Unable to load DateDrop',
     );
   }
 

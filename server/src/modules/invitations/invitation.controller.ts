@@ -5,7 +5,7 @@ import type {
 } from 'express';
 
 import { createInvitationSchema, submitInvitationResponseSchema } from './invitation.schema.js';
-import { createInvitationService, getPublicInvitationService, submitInvitationResponseService } from './invitation.service.js';
+import { createInvitationService, getCreatorInvitationService, getPublicInvitationService, submitInvitationResponseService } from './invitation.service.js';
 
 export function createInvitationController(
   req: Request,
@@ -62,6 +62,25 @@ export function submitInvitationResponseController(
       );
 
     res.status(201).json({
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export function getCreatorInvitationController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  try {
+    const result =
+      getCreatorInvitationService(
+        req.params.creatorToken as string,
+      );
+
+    res.status(200).json({
       data: result,
     });
   } catch (error) {

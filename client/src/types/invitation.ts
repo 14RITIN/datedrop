@@ -63,3 +63,31 @@ export interface SubmitInvitationResponseResponse {
       | 'COMPLETED';
   };
 }
+
+export interface CreatorInvitationResponse {
+  data: {
+    creatorName: string;
+    recipientName: string;
+
+    status:
+      | 'PENDING'
+      | 'DECLINED'
+      | 'COMPLETED'
+      | 'EXPIRED';
+
+    createdAt: string;
+    respondedAt: string | null;
+
+    response: {
+      interested: boolean;
+
+      dateType: string | null;
+
+      date: string | null;
+
+      time: string | null;
+
+      cuisines: Cuisine[];
+    } | null;
+  };
+}

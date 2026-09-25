@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import {
   createInvitationController,
+  getCreatorInvitationController,
   getPublicInvitationController,
   submitInvitationResponseController,
 } from './invitation.controller.js';
@@ -19,4 +20,10 @@ router.post(
   '/:token/response',
   submitInvitationResponseController,
 );
+
+router.get(
+  '/manage/:creatorToken',
+  getCreatorInvitationController,
+);
+
 export default router;

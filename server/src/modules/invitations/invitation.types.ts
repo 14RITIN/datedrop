@@ -53,3 +53,25 @@ export interface SaveInvitationResponseInput {
     | 'DECLINED'
     | 'COMPLETED';
 }
+export interface CreatorInvitationRecord {
+  id: number;
+  creatorName: string;
+  recipientName: string;
+  status: InvitationStatus;
+  createdAt: string;
+  respondedAt: string | null;
+}
+
+export interface InvitationResponseRecord {
+  id: number;
+  interested: number;
+  dateType: string | null;
+  selectedDate: string | null;
+  selectedTime: string | null;
+}
+
+export interface ResponseCuisine {
+  id: number;
+  name: string;
+  emoji: string | null;
+}

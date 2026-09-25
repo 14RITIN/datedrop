@@ -1,18 +1,19 @@
 import { randomBytes } from 'node:crypto';
 
-import type {
-  CreateInvitationInput,
-  SubmitInvitationResponseInput,
-} from './invitation.schema.js';
 
 import {
   createInvitation,
+  findCuisinesByResponseId,
   findExistingCuisineIds,
+  findInvitationByCreatorToken,
   findInvitationByPublicToken,
   findInvitationForResponse,
+  findResponseByInvitationId,
   saveInvitationResponse,
 } from './invitation.repository.js';
+
 import { AppError } from '../../utils/app-error.js';
+import { CreateInvitationInput, SubmitInvitationResponseInput } from './invitation.schema.js';
 
 function generateToken(): string {
   return randomBytes(32).toString('base64url');
@@ -181,5 +182,88 @@ export function submitInvitationResponseService(
 
   return {
     status: 'COMPLETED',
+  };
+}
+
+export function getCreatorInvitationService(
+  creatorToken: string,
+) {
+  const invitation =
+    findInvitationByCreatorToken(
+      creatorToken,
+    );
+
+  if (!invitation) {
+    throw new AppError(
+      404,
+      'INVITATION_NOT_FOUND',
+      'This DateDrop could not be found',
+    );
+  }
+
+  const response =
+    findResponseByInvitationId(
+      invitation.id,
+    );
+
+  if (!response) {
+    return {
+      creatorName:
+        invitation.creatorName,
+
+      recipientName:
+        invitation.recipientName,
+
+      status:
+        invitation.status,
+
+      createdAt:
+        invitation.createdAt,
+
+      respondedAt:
+        invitation.respondedAt,
+
+      response: null,
+    };
+  }
+
+  const cuisines =
+    findCuisinesByResponseId(
+      response.id,
+    );
+
+  return {
+    creatorName:
+      invitation.creatorName,
+
+    recipientName:
+      invitation.recipientName,
+
+    status:
+      invitation.status,
+
+    createdAt:
+      invitation.createdAt,
+
+    respondedAt:
+      invitation.respondedAt,
+
+    response: {
+      interested:
+        Boolean(
+          response.interested,
+        ),
+
+      dateType:
+        response.dateType,
+
+      date:
+        response.selectedDate,
+
+      time:
+        response.selectedTime,
+
+      cuisines,
+    },
   };
 }

@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+import path from 'node:path';
 
 import { initializeDatabase } from './database/schema.js';
 import { seedDatabase } from './database/seed.js';
@@ -9,7 +10,8 @@ import dateOptionsRoutes from './modules/date-options/date-options.routes.js';
 
 const app = express();
 
-const PORT = 4000;
+const PORT = Number(process.env.PORT ?? 4000);
+const HOST = process.env.HOST ?? '0.0.0.0';
 
 initializeDatabase();
 seedDatabase();
@@ -27,8 +29,21 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/invitations', invitationRoutes);
 app.use('/api/date-options', dateOptionsRoutes);
 
+// Docker serves the built SPA and API from the same origin. Development uses Vite.
+if (process.env.CLIENT_DIST_PATH) {
+  const clientDistPath = path.resolve(process.env.CLIENT_DIST_PATH);
+  app.use('/assets', express.static(path.join(clientDistPath, 'assets'), {
+    immutable: true,
+    maxAge: '1y',
+  }));
+  app.use(express.static(clientDistPath));
+  app.get(['/', '/invite/:token', '/manage/:token'], (_req, res) => {
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
+
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`DateDrop API running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`DateDrop listening on http://${HOST}:${PORT}`);
 });

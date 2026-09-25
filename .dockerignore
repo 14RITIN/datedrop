@@ -1,0 +1,17 @@
+**/node_modules
+**/dist
+**/build
+.git
+.agents
+.codex
+**/.env
+**/.env.*
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/*.log
+**/*.tsbuildinfo
+**/.DS_Store
+**/coverage
+.idea
+.vscode

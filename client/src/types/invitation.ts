@@ -43,3 +43,23 @@ export interface DateOptionsResponse {
     cuisines: Cuisine[];
   };
 }
+
+export type SubmitInvitationResponseRequest =
+  | {
+      interested: false;
+    }
+  | {
+      interested: true;
+      dateType: string;
+      cuisineIds: number[];
+      date: string;
+      time: string;
+    };
+
+export interface SubmitInvitationResponseResponse {
+  data: {
+    status:
+      | 'DECLINED'
+      | 'COMPLETED';
+  };
+}

@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 
-import { getInvitation } from "../api/invitations";
+import { getInvitation, submitInvitationResponse } from "../api/invitations";
 import ProgressTimeline from "../components/invitation/ProgressTimeline";
 import type { DateType } from "../components/invitation/DateTypeCard";
 import DateTypeCard from "../components/invitation/DateTypeCard";
 import CuisineCard from "../components/invitation/CuisineCard";
 import ScheduleCard from "../components/invitation/ScheduleCard";
+import SummaryCard from "../components/invitation/SummaryCard";
 
 type InvitationStep =
   | 'intro'
@@ -34,20 +35,12 @@ export default function InvitationPage() {
   const [step, setStep] = useState<InvitationStep>("intro");
 
   const [noAttempts, setNoAttempts] = useState(0);
-  const [selectedDateType, setSelectedDateType] = useState<DateType | null>(
-    null,
-  );
+  const [selectedDateType, setSelectedDateType] = useState<DateType | null>( null);
 
   const [ selectedCuisineIds, setSelectedCuisineIds] = useState<number[]>([]);
-  const [
-  selectedDate,
-  setSelectedDate,
-] = useState('');
+  const [ selectedDate, setSelectedDate ] = useState('');
 
-const [
-  selectedTime,
-  setSelectedTime,
-] = useState('');
+const [ selectedTime, setSelectedTime ] = useState('');
 
   const invitationQuery = useQuery({
     queryKey: ["invitation", token],
@@ -57,6 +50,20 @@ const [
     enabled: Boolean(token),
 
     retry: false,
+  });
+
+  const responseMutation =
+  useMutation({
+    mutationFn: (
+      input:
+        Parameters<
+          typeof submitInvitationResponse
+        >[1],
+    ) =>
+      submitInvitationResponse(
+        token!,
+        input,
+      ),
   });
 
   if (invitationQuery.isPending) {
@@ -129,10 +136,45 @@ const [
    setStep('schedule');
   }
 
-  function handleDecline() {
-    setStep("declined");
+function handleDecline() {
+  responseMutation.mutate(
+    {
+      interested: false,
+    },
+    {
+      onSuccess: () => {
+        setStep(
+          'declined',
+        );
+      },
+    },
+  );
+}
+function handleConfirmDate() {
+  if (
+    !selectedDateType
+  ) {
+    return;
   }
 
+  responseMutation.mutate(
+    {
+      interested: true,
+
+      dateType:
+        selectedDateType,
+
+      cuisineIds:
+        selectedCuisineIds,
+
+      date:
+        selectedDate,
+
+      time:
+        selectedTime,
+    },
+  );
+}
   function handleScheduleContinue(
   date: string,
   time: string,
@@ -299,59 +341,75 @@ const [
     }
   />
 )}
-{step === 'summary' && (
-  <section className="rounded-[2rem] border border-rose-100 bg-white p-6 text-center shadow-xl">
+{step === 'summary' &&
+  selectedDateType && (
+    <>
+      {!responseMutation.isSuccess ? (
+        <SummaryCard
+          creatorName={
+            invitation.creatorName
+          }
+          dateType={
+            selectedDateType
+          }
+          cuisineIds={
+            selectedCuisineIds
+          }
+          date={
+            selectedDate
+          }
+          time={
+            selectedTime
+          }
+          isSubmitting={
+            responseMutation.isPending
+          }
+          error={
+            responseMutation.isError
+              ? responseMutation.error instanceof
+                Error
+                ? responseMutation.error.message
+                : 'Something went wrong'
+              : undefined
+          }
+          onConfirm={
+            handleConfirmDate
+          }
+        />
+      ) : (
+        <section className="rounded-[2rem] border border-rose-100 bg-white p-7 text-center shadow-xl">
+          <div
+            className="text-6xl"
+            aria-hidden="true"
+          >
+            🎉
+          </div>
 
-    <div
-      className="text-5xl"
-      aria-hidden="true"
-    >
-      🎉
-    </div>
+          <h1 className="mt-4 text-3xl font-bold text-slate-900">
+            It's a date!
+          </h1>
 
-    <h1 className="mt-3 text-3xl font-bold text-slate-900">
-      Almost a DateDrop!
-    </h1>
+          <p className="mt-3 text-lg text-slate-600">
+            Congratulations. You have successfully scheduled awkward eye contact. 😂
+          </p>
 
-    <div className="mt-6 space-y-2 rounded-2xl bg-slate-50 p-5 text-left text-sm">
+          <div className="mt-6 rounded-2xl bg-rose-50 p-4">
+            <p className="font-semibold text-rose-700">
+              {selectedDate}
+            </p>
 
-      <p>
-        <strong>
-          Date type:
-        </strong>{' '}
-        {selectedDateType}
-      </p>
+            <p className="mt-1 text-sm text-slate-600">
+              {selectedTime}
+            </p>
+          </div>
 
-      {selectedCuisineIds.length >
-        0 && (
-        <p>
-          <strong>
-            Cuisine IDs:
-          </strong>{' '}
-          {selectedCuisineIds.join(
-            ', ',
-          )}
-        </p>
+          <p className="mt-6 text-xs text-slate-400">
+            Cupid's work here is done. 🫡
+          </p>
+        </section>
       )}
-
-      <p>
-        <strong>Date:</strong>{' '}
-        {selectedDate}
-      </p>
-
-      <p>
-        <strong>Time:</strong>{' '}
-        {selectedTime}
-      </p>
-
-    </div>
-
-    <p className="mt-5 text-sm text-slate-400">
-      Proper summary is next.
-    </p>
-
-  </section>
-)}
+    </>
+  )}
       </div>
     </main>
   );

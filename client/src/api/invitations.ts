@@ -2,6 +2,8 @@ import type {
   CreateInvitationRequest,
   CreateInvitationResponse,
   PublicInvitationResponse,
+  SubmitInvitationResponseRequest,
+  SubmitInvitationResponseResponse,
 } from '../types/invitation';
 
 export async function createInvitation(
@@ -44,6 +46,39 @@ export async function getInvitation(
     throw new Error(
       body?.error?.message ??
         'Unable to load this DateDrop',
+    );
+  }
+
+  return body;
+}
+
+export async function submitInvitationResponse(
+  token: string,
+  input: SubmitInvitationResponseRequest,
+): Promise<SubmitInvitationResponseResponse> {
+  const response = await fetch(
+    `/api/invitations/${encodeURIComponent(token)}/response`,
+    {
+      method: 'POST',
+
+      headers: {
+        'Content-Type':
+          'application/json',
+      },
+
+      body: JSON.stringify(
+        input,
+      ),
+    },
+  );
+
+  const body =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      body?.error?.message ??
+        'Unable to save your DateDrop',
     );
   }
 

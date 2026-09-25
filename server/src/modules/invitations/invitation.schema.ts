@@ -23,3 +23,79 @@ export const createInvitationSchema = z.object({
 export type CreateInvitationInput = z.infer<
   typeof createInvitationSchema
 >;
+
+const dateTypeSchema = z.enum([
+  'dinner',
+  'lunch',
+  'coffee',
+  'dessert',
+  'movie',
+  'picnic',
+  'surprise',
+]);
+
+const acceptedResponseSchema = z.object({
+  interested: z.literal(true),
+
+  dateType: dateTypeSchema,
+
+  cuisineIds: z
+    .array(
+      z.number().int().positive(),
+    )
+    .max(3)
+    .default([]),
+
+  date: z
+    .string()
+    .regex(
+      /^\d{4}-\d{2}-\d{2}$/,
+      'Invalid date',
+    ),
+
+  time: z
+    .string()
+    .regex(
+      /^([01]\d|2[0-3]):[0-5]\d$/,
+      'Invalid time',
+    ),
+});
+
+const declinedResponseSchema = z.object({
+  interested: z.literal(false),
+});
+
+export const submitInvitationResponseSchema =
+  z
+    .union([
+      acceptedResponseSchema,
+      declinedResponseSchema,
+    ])
+    .superRefine((value, ctx) => {
+      if (!value.interested) {
+        return;
+      }
+
+      const requiresCuisine = [
+        'dinner',
+        'lunch',
+        'dessert',
+      ].includes(value.dateType);
+
+      if (
+        requiresCuisine &&
+        value.cuisineIds.length === 0
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['cuisineIds'],
+          message:
+            'Select at least one cuisine',
+        });
+      }
+    });
+
+export type SubmitInvitationResponseInput =
+  z.infer<
+    typeof submitInvitationResponseSchema
+  >;

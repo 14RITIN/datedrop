@@ -31,3 +31,25 @@ export interface PublicInvitation {
   status: InvitationStatus;
   createdAt: string;
 }
+export interface InvitationResponseTarget {
+  id: number;
+  status: InvitationStatus;
+}
+
+export interface SaveInvitationResponseInput {
+  invitationId: number;
+
+  interested: boolean;
+
+  dateType?: string;
+
+  selectedDate?: string;
+
+  selectedTime?: string;
+
+  cuisineIds: number[];
+
+  status:
+    | 'DECLINED'
+    | 'COMPLETED';
+}

@@ -4,8 +4,8 @@ import type {
   Response,
 } from 'express';
 
-import { createInvitationSchema } from './invitation.schema.js';
-import { createInvitationService, getPublicInvitationService } from './invitation.service.js';
+import { createInvitationSchema, submitInvitationResponseSchema } from './invitation.schema.js';
+import { createInvitationService, getPublicInvitationService, submitInvitationResponseService } from './invitation.service.js';
 
 export function createInvitationController(
   req: Request,
@@ -38,6 +38,31 @@ export function getPublicInvitationController(
 
     res.status(200).json({
       data: invitation,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export function submitInvitationResponseController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  try {
+    const input =
+      submitInvitationResponseSchema.parse(
+        req.body,
+      );
+
+    const result =
+      submitInvitationResponseService(
+        req.params.token as string,
+        input,
+      );
+
+    res.status(201).json({
+      data: result,
     });
   } catch (error) {
     next(error);

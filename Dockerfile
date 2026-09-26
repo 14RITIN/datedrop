@@ -21,7 +21,6 @@ RUN npm ci --workspace server --omit=dev --include-workspace-root=false
 FROM node:24-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production \
-    PORT=4000 \
     HOST=0.0.0.0 \
     DATABASE_PATH=/app/data/datedrop.db \
     CLIENT_DIST_PATH=/app/client/dist

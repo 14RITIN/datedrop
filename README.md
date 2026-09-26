@@ -82,11 +82,11 @@ DATEDROP_PORT=8081 docker compose up --build
 
 Compose reads `.env`; it is ignored by Git and excluded from Docker builds. Do not put secrets in the Dockerfile or commit them.
 
-The backend also accepts these process environment variables (Docker sets them in the image):
+The backend also accepts these process environment variables:
 
 | Variable | Docker value | Local default |
 | --- | --- | --- |
-| `PORT` | `4000` | `4000` |
+| `PORT` | Unset; server falls back to `4000` | `4000` |
 | `HOST` | `0.0.0.0` | `0.0.0.0` |
 | `DATABASE_PATH` | `/app/data/datedrop.db` | `server/database/datedrop.db` |
 | `CLIENT_DIST_PATH` | `/app/client/dist` | Unset; frontend served by Vite |
@@ -99,3 +99,23 @@ For normal development keep the API on port 4000 to match Vite's proxy. The root
 - Use `npm run dev` for editing with hot reload.
 - Use `docker compose up --build` to run compiled production assets with persistent Docker-managed storage. Rebuild after source changes.
 - Use `docker compose build` to validate image creation without starting the application.
+
+## Deployment
+
+Deploy one Railway service from this repository, using the repository root (`/`) as the Root Directory. Railway detects the root `Dockerfile`; leave custom build/start commands unset to use its build stages and `node server/dist/index.js` command. React and `/api` share the same Express service; no frontend API URL or second web server is needed.
+
+Before deploying, attach a persistent Railway volume at **`/data`** and set this service variable:
+
+```dotenv
+DATABASE_PATH=/data/datedrop.db
+```
+
+Leave `PORT` unset in Railway's Variables UI so Railway supplies it automatically. Express listens on that port, falling back to 4000 only when no `PORT` is provided. The Dockerfile already supplies `NODE_ENV=production`, `HOST=0.0.0.0`, and `CLIENT_DIST_PATH=/app/client/dist`; do not duplicate them manually. Do not set `DATEDROP_PORT` on Railway; it is only for local Compose. See [Railway's port guidance](https://docs.railway.com/networking/troubleshooting/application-failed-to-respond).
+
+**Volume permissions:** the current Dockerfile uses `USER node` (UID/GID 1000), while Railway mounts volumes as root. For a default Railway volume, also set **`RAILWAY_RUN_UID=0`**, following [Railway's volume permissions documentation](https://docs.railway.com/volumes#permissions). This explicitly runs the Railway service as root to permit SQLite writes; it is not required by DateDrop itself. Omit the override if the mounted directory and existing database/WAL files are already writable by UID/GID 1000. The image has no startup permission-fixing entrypoint, and build-time `chown` cannot fix a volume mounted later. Local Compose continues running as `node`. Schema creation and cuisine seeding happen at startup; no pre-deploy database command is needed.
+
+In Railway Settings, set **Healthcheck Path** to **`/api/health`**, keep a single replica for this SQLite service, and generate a public domain using the automatically detected port. If a target-port override is present, it must match Railway's supplied `PORT`, not the local fallback of 4000. The public health URL is `https://<your-domain>/api/health`. Direct visits to `/invite/:token` and `/manage/:token` serve the React app; unknown API/asset requests remain 404s.
+
+SQLite and its WAL files persist under `/data` across deployments. Keep the volume attached; deleting it deletes the invitations. Normal local development still uses `npm run dev` and `server/database/datedrop.db`.
+
+References: [Railway Dockerfile deployment](https://docs.railway.com/builds/dockerfiles), [health checks](https://docs.railway.com/deployments/healthchecks).

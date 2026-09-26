@@ -63,6 +63,15 @@ The volume survives restarts, container recreation, image rebuilds, and `docker 
 
 Keep the same Compose project name to reuse the same volume. Creator tracking links in localStorage remain browser/origin-specific: development on port 5173 and Docker on port 8080 have separate saved lists.
 
+### Reset the Docker database
+
+This permanently deletes all invitations in the Docker database (not the local development database):
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
 ### Configuration
 
 Defaults work without an environment file. To change the host port, copy `.env.example` to `.env` and set `DATEDROP_PORT`, then start Compose again. For example:

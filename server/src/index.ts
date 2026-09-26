@@ -37,7 +37,16 @@ if (process.env.CLIENT_DIST_PATH) {
     maxAge: '1y',
   }));
   app.use(express.static(clientDistPath));
-  app.get(['/', '/invite/:token', '/manage/:token'], (_req, res) => {
+  app.get('/{*page}', (req, res, next) => {
+    // Browser navigation belongs to React; missing APIs/assets must stay 404s.
+    if (
+      req.path === '/api' || req.path.startsWith('/api/') ||
+      req.path === '/assets' || req.path.startsWith('/assets/') ||
+      path.extname(req.path) || !req.accepts('html')
+    ) {
+      next();
+      return;
+    }
     res.sendFile(path.join(clientDistPath, 'index.html'));
   });
 }

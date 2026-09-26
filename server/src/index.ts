@@ -26,6 +26,7 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+// route
 app.use('/api/invitations', invitationRoutes);
 app.use('/api/date-options', dateOptionsRoutes);
 

@@ -1,121 +1,161 @@
 # DateDrop 💌
 
-DateDrop is a playful full-stack application for sending someone an interactive date invitation. Recipients can accept or decline, choose a date type and cuisine, and select a date and time.
+A playful, mobile-first way to turn a date invitation into a plan.
 
-The frontend uses React, TypeScript, Vite, and Tailwind CSS. The backend uses Express, TypeScript, Zod, and SQLite through better-sqlite3. Both packages are npm workspaces.
+**[🚀 Live Demo](https://datedrop-server-production.up.railway.app/)**
 
-## Local development
+## What is DateDrop?
 
-Use Node.js 24 LTS and npm. From the repository root:
+DateDrop is a full-stack app for creating personal date invitations, sharing a link, and tracking the response. Recipients can accept or decline, then choose date details if interested.
+
+## Live Demo
+
+[Try DateDrop on Railway](https://datedrop-server-production.up.railway.app/).
+
+**Screenshots & GIF — coming soon:** a walkthrough of the creator and recipient journeys.
+
+## Features
+
+- Personalized invitations with separate public sharing and private creator access.
+- Native sharing through the Web Share API, with clipboard fallback.
+- Guided recipient flow for interest, date type, cuisine where applicable, and date/time selection.
+- Creator response tracking and a “Your DateDrops” list saved in localStorage on the same browser and origin.
+- Playful interactions with keyboard, touch, and reduced-motion support.
+- Persistent SQLite storage and a single production Docker container.
+
+## User Flow
+
+Creator creates invitation → shares link → recipient responds → chooses date details if interested → creator tracks response.
+
+Share the public invitation link only; creator tracking links are private.
+
+## Tech Stack
+
+| Layer | Technologies |
+| --- | --- |
+| Frontend | React, TypeScript, Vite, Tailwind CSS, React Router |
+| Server state | TanStack Query |
+| Backend | Node.js, Express, TypeScript, Zod validation |
+| Database | SQLite via better-sqlite3 |
+| Tooling and hosting | npm workspaces, Docker, Docker Compose, Railway |
+
+## Architecture
+
+```text
+Browser (React)
+      │ same-origin requests
+      ▼
+Node.js / Express
+      ├── /api/* → routes → controllers → services → repositories → SQLite
+      └── React production assets + SPA routing fallback
+```
+
+One Express process serves the API and built React app from the same origin, with a fallback for React Router pages. A multi-stage Docker build compiles both npm workspaces.
+
+## Getting Started
+
+For local development, install Node.js 24 and npm. Clone the repository, enter its root directory, and install workspace dependencies:
 
 ```bash
 npm ci
+```
+
+SQLite tables and cuisine seed data initialize on startup. For setup without local Node.js, see [Docker](#docker).
+
+## Local Development
+
+```bash
 npm run dev
 ```
 
-Open the URL printed by Vite (normally http://localhost:5173). Vite proxies `/api` to Express on port 4000. Both applications reload as you edit. The local database is `server/database/datedrop.db`.
+Open the Vite URL, normally http://localhost:5173. Vite proxies `/api` to Express on port 4000; both workspaces reload during development. The database is stored at `server/database/datedrop.db`.
 
-To typecheck and build both workspaces:
+Typecheck and build both workspaces:
 
 ```bash
 npm run build
 ```
 
-## Docker: local production-style usage
+Keep the backend on port 4000 to match the development proxy. The root `.env` is used by Compose and is not automatically loaded by `npm run dev`.
 
-### Prerequisites
+## Docker
 
-Install Docker Desktop (macOS/Windows), or Docker Engine with the Docker Compose plugin (Linux), and start the Docker daemon. Local Node.js/npm installation is not required for Docker usage. The first build needs internet access to download the base image and dependencies.
-
-### Build and start
-
-Run from the repository root:
+Install Docker Desktop or Docker Engine with the Compose plugin, then run:
 
 ```bash
 docker compose up --build
 ```
 
-Open http://localhost:8080. To run in the background instead:
+Open http://localhost:8080. Compose maps local port 8080 to container port 4000. To change the local port, copy `.env.example` to `.env` and set `DATEDROP_PORT`.
 
-```bash
-docker compose up --build -d
-docker compose ps
-docker compose logs -f datedrop
-```
-
-The multi-stage Dockerfile builds the frontend production bundle and compiles the backend. One small runtime container runs the compiled Express application as the non-root `node` user with backend production dependencies. Express serves the frontend and `/api` on the same port, including direct visits to invitation and management routes. Vite and build tools are not run in the runtime container. Hashed frontend assets receive long-lived cache headers.
-
-This intentionally uses one application service: no reverse proxy or cross-container hostname configuration is needed. Browser API requests remain relative to the same origin. The container listens on port 4000, mapped to port 8080 on the host loopback interface for local usage. Links opened on another device will require a reachable deployment address; localhost links only work on this computer.
-
-### Stop
+Stop the application:
 
 ```bash
 docker compose down
 ```
 
-This removes the container and network but retains the database volume. Use `docker compose stop` / `docker compose start` to stop and restart the existing container instead.
+SQLite persists at `/app/data/datedrop.db` in the named volume `datedrop-data`, mounted at `/app/data`. The volume survives container recreation and `docker compose down`. Adding `-v` permanently deletes the volume and its invitations.
 
-### SQLite persistence
-
-Compose mounts the named volume `datedrop-data` at `/app/data`. SQLite writes `/app/data/datedrop.db` and its WAL/SHM files there. Docker normally prefixes the volume name with the Compose project name, such as `datedrop_datedrop-data`.
-
-The volume survives restarts, container recreation, image rebuilds, and `docker compose down`. **`docker compose down -v` deletes the database volume and its invitations.** Docker's database is separate from the development database; local database files are excluded from the build context.
-
-Keep the same Compose project name to reuse the same volume. Creator tracking links in localStorage remain browser/origin-specific: development on port 5173 and Docker on port 8080 have separate saved lists.
-
-### Reset the Docker database
-
-This permanently deletes all invitations in the Docker database (not the local development database):
-
-```bash
-docker compose down -v
-docker compose up --build
-```
-
-### Configuration
-
-Defaults work without an environment file. To change the host port, copy `.env.example` to `.env` and set `DATEDROP_PORT`, then start Compose again. For example:
-
-```bash
-DATEDROP_PORT=8081 docker compose up --build
-```
-
-Compose reads `.env`; it is ignored by Git and excluded from Docker builds. Do not put secrets in the Dockerfile or commit them.
-
-The backend also accepts these process environment variables:
-
-| Variable | Docker value | Local default |
-| --- | --- | --- |
-| `PORT` | Unset; server falls back to `4000` | `4000` |
-| `HOST` | `0.0.0.0` | `0.0.0.0` |
-| `DATABASE_PATH` | `/app/data/datedrop.db` | `server/database/datedrop.db` |
-| `CLIENT_DIST_PATH` | `/app/client/dist` | Unset; frontend served by Vite |
-| `NODE_ENV` | `production` | Unset |
-
-For normal development keep the API on port 4000 to match Vite's proxy. The root `.env` is used by Compose for port substitution; `npm run dev` does not automatically load it.
-
-### Development versus Docker
-
-- Use `npm run dev` for editing with hot reload.
-- Use `docker compose up --build` to run compiled production assets with persistent Docker-managed storage. Rebuild after source changes.
-- Use `docker compose build` to validate image creation without starting the application.
+Use `npm run dev` for hot reload and Docker for production-style local usage. Rebuild the image after source changes.
 
 ## Deployment
 
-Deploy one Railway service from this repository, using the repository root (`/`) as the Root Directory. Railway detects the root `Dockerfile`; leave custom build/start commands unset to use its build stages and `node server/dist/index.js` command. React and `/api` share the same Express service; no frontend API URL or second web server is needed.
+Deploy the repository root to Railway using the existing Dockerfile and one application replica.
 
-Before deploying, attach a persistent Railway volume at **`/data`** and set this service variable:
+| Setting | Value |
+| --- | --- |
+| Start command | Leave unset to use the Dockerfile's `node server/dist/index.js` |
+| Healthcheck path | `/api/health` |
+| Persistent volume mount | `/data` |
+| Service variable | `DATABASE_PATH=/data/datedrop.db` |
+| Port | Let Railway supply `PORT`; Express falls back to 4000 locally |
 
-```dotenv
-DATABASE_PATH=/data/datedrop.db
+Generate a public domain for the service. The Dockerfile already sets the production environment, listen address, and React asset path.
+
+The persistent SQLite volume must be writable by the runtime user. The image uses non-root `node` (UID 1000). For Railway's default root-owned volume, its documented workaround is `RAILWAY_RUN_UID=0`, which runs the service as root; omit this override if the directory and database files are already writable by UID 1000. See [Railway volume permissions](https://docs.railway.com/volumes#permissions).
+
+Keep the volume attached across deployments to retain invitations. No separate database service or pre-deploy schema command is needed.
+
+## Accessibility
+
+Accessibility work includes visible focus states, labeled fields, semantic buttons, selection and progress indicators, and announced status/error feedback. The app respects reduced-motion preferences and provides a stable decline option for keyboard and touch users.
+
+Work toward WCAG 2.2 AA is ongoing; full conformance has not been verified.
+
+## Project Structure
+
+```text
+client/src/
+  pages/                  Creator and recipient journeys
+  components/invitation/  Selection cards, timeline, sharing controls
+  api/                    API requests
+  hooks/                  Shared React hooks
+  utils/                  Browser storage helpers
+server/src/
+  index.ts                Express startup and static serving
+  database/               SQLite connection, schema, cuisine seeds
+  modules/                Invitation and date-options API layers
+  middleware/             Error handling
+Dockerfile                Production build and runtime
+docker-compose.yml       Local container and persistent volume
+.env.example              Configuration guidance
 ```
 
-Leave `PORT` unset in Railway's Variables UI so Railway supplies it automatically. Express listens on that port, falling back to 4000 only when no `PORT` is provided. The Dockerfile already supplies `NODE_ENV=production`, `HOST=0.0.0.0`, and `CLIENT_DIST_PATH=/app/client/dist`; do not duplicate them manually. Do not set `DATEDROP_PORT` on Railway; it is only for local Compose. See [Railway's port guidance](https://docs.railway.com/networking/troubleshooting/application-failed-to-respond).
+## API Overview
 
-**Volume permissions:** the current Dockerfile uses `USER node` (UID/GID 1000), while Railway mounts volumes as root. For a default Railway volume, also set **`RAILWAY_RUN_UID=0`**, following [Railway's volume permissions documentation](https://docs.railway.com/volumes#permissions). This explicitly runs the Railway service as root to permit SQLite writes; it is not required by DateDrop itself. Omit the override if the mounted directory and existing database/WAL files are already writable by UID/GID 1000. The image has no startup permission-fixing entrypoint, and build-time `chown` cannot fix a volume mounted later. Local Compose continues running as `node`. Schema creation and cuisine seeding happen at startup; no pre-deploy database command is needed.
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/health` | Application health |
+| GET | `/api/date-options` | Available date types and cuisines |
+| POST | `/api/invitations` | Create an invitation |
+| GET | `/api/invitations/:token` | Read a public invitation |
+| POST | `/api/invitations/:token/response` | Submit the recipient's response |
 
-In Railway Settings, set **Healthcheck Path** to **`/api/health`**, keep a single replica for this SQLite service, and generate a public domain using the automatically detected port. If a target-port override is present, it must match Railway's supplied `PORT`, not the local fallback of 4000. The public health URL is `https://<your-domain>/api/health`. Direct visits to `/invite/:token` and `/manage/:token` serve the React app; unknown API/asset requests remain 404s.
+A private creator endpoint provides response tracking; keep creator links and tokens private.
 
-SQLite and its WAL files persist under `/data` across deployments. Keep the volume attached; deleting it deletes the invitations. Normal local development still uses `npm run dev` and `server/database/datedrop.db`.
+## Roadmap
 
-References: [Railway Dockerfile deployment](https://docs.railway.com/builds/dockerfiles), [health checks](https://docs.railway.com/deployments/healthchecks).
+- [ ] Add screenshots and a short demo GIF.
+- [ ] Expand automated coverage of creator and recipient journeys.
+- [ ] Continue accessibility testing across browsers and assistive technologies.
+- [ ] Document and test SQLite backup and restore procedures.
